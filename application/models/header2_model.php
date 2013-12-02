@@ -11,7 +11,7 @@ class Header2_model extends CI_Model{
 		$userId=$this->session->userdata('userId');
 		$keyword=$this->input->get('keywords');
 		//$this->db->from('linkedin_users');
-		$this->db->join('Student','linkedin_users.userId=student.userId');
+		$this->db->join('student','linkedin_users.userId=student.userId');
 		$this->db->like('userFirstName', $keyword, 'after'); 
 		//$this->db->where('title LIKE', "%$keyword%")		
 		$query = $this->db->get('linkedin_users');
@@ -159,7 +159,7 @@ class Header2_model extends CI_Model{
 
 		$school=$this->input->get('school');
 		//$this->db->from('linkedin_users');
-		$this->db->join('Student','linkedin_users.userId=student.userId');
+		$this->db->join('student','linkedin_users.userId=student.userId');
 
 		if($firstName!='')
 		$this->db->where('userFirstName', $firstName); 

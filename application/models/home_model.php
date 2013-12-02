@@ -104,7 +104,7 @@ class Home_model extends CI_Model{
 				$data=array(
 				'userId'=>$userId,
 				'postContent'=>$post,			
-				'date'=>date('Y-m-d h-m-s'),
+				'date'=>date('Y-m-d h:m:s'),
 				'shareWith'=>$this->input->post('shareWith')
 				);
 			}
@@ -113,7 +113,7 @@ class Home_model extends CI_Model{
 				$data=array(
 				'userId'=>$userId,
 				'postContent'=>$post,			
-				'date'=>date('Y-m-d h-m-s'),
+				'date'=>date('Y-m-d h:m:s'),
 				'filePath'=>$filePath,
 				'shareWith'=>$this->input->post('shareWith'),
 				);
