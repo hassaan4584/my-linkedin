@@ -17,7 +17,7 @@ class Login_model extends CI_Model{
 		
 		// Prep the query
 		$this->db->where('userEmail', $userEmail);
-		$this->db->where('userPassword', $password);
+		$this->db->where('userPassword', $pwd);
 		
 		// Run the query
 		$query = $this->db->get('linkedin_users');
