@@ -1,0 +1,463 @@
+LI.define("DataSource");
+LI.define("DataSource.Factory");
+LI.DataSource.Factory={createSource:function(a,c){var d=null,b="";
+if(typeof c==="string"){b=c;
+if(LI.DataSource.Sources.hasOwnProperty(b)){d=LI.DataSource.Sources[b].create(a)
+}}else{if(c.hasOwnProperty("create")&&typeof c.create==="function"){d=c.create(a)
+}}return d
+}};
+LI.define("DataSource.RegexHelper");
+LI.DataSource.RegexHelper={esc:function(a){return(a+"").replace(/[\-#$\^*()+\[\]{}|\\,.?\s]/g,"\\$&")
+}};
+LI.define("DataSource.Filters");
+LI.DataSource.Filters={startsWithMatch:function(b,a){if(!b){return true
+}return a.toLowerCase().indexOf(b)===0
+},subwordAnyMatch:function(h,d){d=LI.htmlUnencode?LI.htmlUnencode(d):d;
+var f,e,k=/\s+/,b=h.toLowerCase().split(k),a=b.length,c=d.toLowerCase().split(k),g=c.length;
+for(f=0;
+f<a;
+f++){for(e=0;
+e<g;
+e++){if(c[e].indexOf(b[f])===0){return true
+}}}return false
+},subwordAllMatch:function(k,d){d=LI.htmlUnencode?LI.htmlUnencode(d):d;
+var g,e,l=/\s+/,b=k.toLowerCase().split(l),a=b.length,c=d.toLowerCase().split(l),h=c.length,f=0;
+for(g=0;
+g<a;
+g++){for(e=0;
+e<h;
+e++){if(c[e].indexOf(b[g])===0){f+=1;
+break
+}}}if(f===a){return true
+}else{return false
+}},phraseMatch:function(b,a){return a.toLowerCase().indexOf(b)>-1
+}};
+LI.DataSource.clientSideFilterFactory=function(e,c,d){var b="subwordAllMatch",a={filter:e||b,highlighting:(c===false)?false:true,dedupe:d||false};
+return function(p,s,v,q){var l=[];
+if(q&&q.argument&&q.argument.query){p=q.argument.query
+}if(p&&p!==""){v=YAHOO.widget.AutoComplete._cloneObject(v);
+var k=q.scope,u=this,h=v.results,r=[],f=k.maxResultsDisplayed,n,m,t,j,o,g;
+for(j=0,o=h.length;
+j<o;
+j++){n=h[j];
+m=null;
+if(YAHOO.lang.isString(n)){m=n
+}else{if(YAHOO.lang.isArray(n)){m=n[0]
+}else{if(this.responseSchema.fields){t=this.responseSchema.fields[0].key||this.responseSchema.fields[0];
+m=n[t]
+}else{if(this.key){m=n[this.key]
+}}}}if(YAHOO.lang.isString(m)){if(LI.DataSource.Filters.hasOwnProperty(a.filter)){g=LI.DataSource.Filters[a.filter]
+}else{g=LI.Datasource.Filters[b]
+}if(g(decodeURIComponent(p),m)){if(a.highlighting){m=LI.DataSource.Highlighter.highlight(m,decodeURIComponent(p).split(/\s+/));
+if(YAHOO.lang.isString(n)){n=m
+}else{if(YAHOO.lang.isArray(n)){n[0]=m
+}else{if(this.responseSchema.fields){t=this.responseSchema.fields[0].key||this.responseSchema.fields[0];
+n[t]=m
+}else{if(this.key){n[this.key]=m
+}}}}}if(a.dedupe){if(l.indexOf(n.id)>-1){continue
+}else{l.push(n.id)
+}}r.push(n)
+}}if(o>f&&r.length===f){break
+}}v.results=r
+}return v
+}
+};
+LI.define("DataSource.Highlighter");
+LI.DataSource.Highlighter={_REGEX:"(^|\\s)"+"(&[^;\\s]*)?"+"(%needles)",_TEMPLATE:'<strong class="ta-highlight">{s}</strong>',_REPLACER:function(a,d,c,b){return c&&!(/\s/).test(b)?a:LI.DataSource.Highlighter._TEMPLATE.replace(/\{s\}/g,d+b)
+},highlight:function(j,a,k){var g=[],f,d,e,c,h,b;
+if(!k){k={}
+}h=LI.DataSource.Highlighter._REGEX;
+b=k.replacer||LI.DataSource.Highlighter._REPLACER;
+a=YAHOO.lang.isArray(a)?a:[a];
+for(d=0,e=a.length;
+d<e;
+++d){c=a[d];
+c=LI.htmlEncode?LI.htmlEncode(c):c;
+if(c){g.push(LI.DataSource.RegexHelper.esc(c))
+}}if(!g.length){return j
+}return j.replace(new RegExp(h.replace("%needles",g.join("|")),k.caseSensitive?"g":"gi"),b)
+}};
+LI.define("DataSource.MultiSourceHelper");
+LI.DataSource.MultiSourceHelper={filterAndSortBeforeCallback:function(m,t,r,l){if(l&&l.argument&&l.argument.query){m=l.argument.query
+}if(m&&m!==""){r=YAHOO.widget.AutoComplete._cloneObject(r);
+if(l&&l.argument&&l.argument.skipFilterAndSort){return r
+}var g=l.scope,p=this,o=r.results,a=[],k={},h=g.maxResultsDisplayed||30,b=g.maxResultsPerSource||5,e=null,c={},s=[],n,f,j,d,q;
+if(typeof b==="number"){e=b
+}else{for(n=0,f=b.length;
+n<f;
+n++){c[b[n].sourceID]=b[n].max;
+s.push(b[n].sourceID)
+}}for(n=0,j=o.length;
+n<j;
+n++){if(o[n].type==="category"){continue
+}if(!("sourceID" in o[n])){a.push(o[n]);
+continue
+}if(o[n].sourceID in k){k[o[n].sourceID]+=1
+}else{k[o[n].sourceID]=1;
+a.push({type:"category",displayName:o[n].sourceID,sourceID:o[n].sourceID,rank:o[n].rank||"0"})
+}if(k[o[n].sourceID]<=(e?e:c[o[n].sourceID])){o[n].type="item";
+o[n]._index=n;
+a.push(o[n])
+}}o=a;
+if(s&&s.length>0){o.sort(function(u,i){d=s.indexOf(u.sourceID);
+q=s.indexOf(i.sourceID);
+if(d===-1&&q===-1){return 0
+}if(d===-1){return 1
+}if(d===-1){return -1
+}if(d-q!==0){return d-q
+}if(u.type!=="category"&&i.type!=="category"){return(typeof u._index==="number"&&typeof i._index==="number")?u._index-i._index:0
+}if(u.type==="category"){return -1
+}if(i.type==="category"){return 1
+}return 0
+})
+}g.maxResultsDisplayed=Math.max(g.maxResultsDisplayed,o.length);
+r.results=o
+}return r
+},flattenResponseBeforeParseData:function(k,n,l){var a={},g=[],m={},d="meta",e,c,h,b,f;
+for(e in n){if(n.hasOwnProperty(e)){if(e===d){m=n[e]
+}else{b=n[e];
+if(b.resultList){for(c=0,h=b.resultList.length;
+c<h;
+c++){f=b.resultList[c];
+if(f.hasOwnProperty("sourceID")){}else{f.sourceID=e
+}g.push(f)
+}}}}}a.resultList=g;
+a[d]=m;
+return a
+}};
+LI.define("DataSource.Helper");
+LI.DataSource.Helper={defaultXHRConfig:{responseType:YAHOO.util.DataSourceBase.TYPE_JSON,responseSchema:{resultsList:"resultList",fields:["headLine","displayName","subLine","imageUrl","id","url"],metaFields:{}},connXhrMode:"ignoreStaleResponses",maxCacheEntries:100},defaultLocalConfig:{responseType:YAHOO.util.DataSourceBase.TYPE_JSON,responseSchema:{resultsList:"resultList",fields:["headLine","displayName","subLine","imageUrl","id","url"],metaFields:{}},maxCacheEntries:100},createXHRDataSource:function(a,b){return new YAHOO.util.XHRDataSource(a,b)
+},createLocalDataSource:function(a,b){b.doBeforeCallback=b.doBeforeCallback||LI.DataSource.clientSideFilterFactory();
+return new YAHOO.util.LocalDataSource(a,b)
+},createLocalXHRDataSource:function(f,g,c,d){c.doBeforeCallback=c.doBeforeCallback||LI.DataSource.clientSideFilterFactory();
+d=d||{"resultList":[]};
+var a=g,b=new YAHOO.util.LocalDataSource(d,c),h=false,i;
+function e(){YEvent.removeListener(f,"focus",e);
+if(h===true){return
+}h=true;
+YAHOO.util.Connect.asyncRequest("GET",a,{success:function(k){try{i=YJson.parse(k.responseText);
+b.liveData=i
+}catch(j){}}})
+}if(YEvent.DOMReady){e()
+}else{YEvent.on(f,"focus",e,this,true)
+}return b
+},createFederatorXHRDataSource:function(a,b,c){if(typeof b.scriptQueryAppend!=="string"){b.scriptQueryAppend="types="
+}b.doBeforeParseData=b.doBeforeParseData||LI.DataSource.MultiSourceHelper.flattenResponseBeforeParseData;
+b.doBeforeCallback=b.doBeforeCallback||LI.DataSource.MultiSourceHelper.filterAndSortBeforeCallback;
+b.categoryI18nMap=c||null;
+return new YAHOO.util.XHRDataSource(a,b)
+},createAggregatedDataSource:function(b,a,c){a.doBeforeParseData=a.doBeforeParseData||LI.DataSource.MultiSourceHelper.flattenResponseBeforeParseData;
+a.doBeforeCallback=a.doBeforeCallback||LI.DataSource.MultiSourceHelper.filterAndSortBeforeCallback;
+a.categoryI18nMap=c||null;
+return new LI.DataSourceAggregator2(b,a)
+}};
+LI.define("DataSource.Sources");
+LI.DataSource.Sources={TYPE_COMPANY:{liveData:"/ta/company",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.COMPANY)?this.liveData:LI.TypeaheadDataSourceUrls.COMPANY;
+return LI.DataSource.Helper.createXHRDataSource(b,this.config)
+}},TYPE_INDUSTRY:{liveData:"/ta/industry",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultLocalConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.INDUSTRY)?this.liveData:LI.TypeaheadDataSourceUrls.INDUSTRY;
+return LI.DataSource.Helper.createLocalXHRDataSource(a,b,this.config)
+}},TYPE_REGION:{liveData:"/ta/region",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.REGION)?this.liveData:LI.TypeaheadDataSourceUrls.REGION;
+return LI.DataSource.Helper.createXHRDataSource(b,this.config)
+}},TYPE_GROUP:{liveData:"/ta/group",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.GROUP)?this.liveData:LI.TypeaheadDataSourceUrls.GROUP;
+return LI.DataSource.Helper.createXHRDataSource(b,this.config)
+}},TYPE_JOB_TITLE:{liveData:"/ta/titleV2",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.JOB_TITLE)?this.liveData:LI.TypeaheadDataSourceUrls.JOB_TITLE;
+return LI.DataSource.Helper.createXHRDataSource(b,this.config)
+}},TYPE_JOB_FUNCTION:{liveData:"/ta/jobfunc",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultLocalConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.JOB_FUNCTION)?this.liveData:LI.TypeaheadDataSourceUrls.JOB_FUNCTION;
+return LI.DataSource.Helper.createLocalXHRDataSource(a,b,this.config)
+}},TYPE_SKILL:{liveData:"/ta/skill",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.SKILL)?this.liveData:LI.TypeaheadDataSourceUrls.SKILL;
+return LI.DataSource.Helper.createXHRDataSource(b,this.config)
+}},TYPE_LANGUAGE:{liveData:"/ta/language",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultLocalConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.LANGUAGE)?this.liveData:LI.TypeaheadDataSourceUrls.LANGUAGE;
+return LI.DataSource.Helper.createLocalXHRDataSource(a,b,this.config)
+}},TYPE_SCHOOL:{liveData:"/ta/school",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.SCHOOL)?this.liveData:LI.TypeaheadDataSourceUrls.SCHOOL;
+return LI.DataSource.Helper.createXHRDataSource(b,this.config)
+}},TYPE_DEGREE:{liveData:"/ta/degree",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultLocalConfig,{doBeforeCallback:LI.DataSource.clientSideFilterFactory(null,null,true)}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.DEGREE)?this.liveData:LI.TypeaheadDataSourceUrls.DEGREE;
+return LI.DataSource.Helper.createLocalXHRDataSource(a,b,this.config)
+}},TYPE_FIELD_OF_STUDY:{liveData:"/ta/fieldofstudy",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.FIELD_OF_STUDY)?this.liveData:LI.TypeaheadDataSourceUrls.FIELD_OF_STUDY;
+return LI.DataSource.Helper.createXHRDataSource(b,this.config)
+}},TYPE_SCHOOLS_AND_DEGREES_AND_FIELDS_OF_STUDY:{liveData:"/ta/federator",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{scriptQueryAppend:"types=fieldofstudy,school,degree",responseSchema:{resultsList:"resultList",fields:["headLine","displayName","subLine","url","sourceID","imageUrl","id"]}}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.FEDERATOR)?this.liveData:LI.TypeaheadDataSourceUrls.FEDERATOR;
+return LI.DataSource.Helper.createFederatorXHRDataSource(b,this.config,{fieldofstudy:LI.i18n.get("typeahead2-search-fields-of-study"),school:LI.i18n.get("typeahead2-search-schools"),degree:LI.i18n.get("typeahead2-search-degrees")})
+}},TYPE_MY_NETWORK:{liveData:"/ta/mynetwork",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{responseSchema:{resultsList:"resultList",fields:["headLine","displayName","subLine","url","sourceID","imageUrl","id","misc"]}}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.MY_NETWORK)?this.liveData:LI.TypeaheadDataSourceUrls.MY_NETWORK;
+return LI.DataSource.Helper.createXHRDataSource(this.liveData,this.config)
+}},TYPE_ALL_FIRST_DEGREE_CONNECTIONS:{liveData:"/ta/my1stnetwork",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.FIRST_DEGREE_MY_NETWORK)?this.liveData:LI.TypeaheadDataSourceUrls.FIRST_DEGREE_MY_NETWORK;
+return LI.DataSource.Helper.createXHRDataSource(b,this.config)
+}},TYPE_COMPANIES_AND_FIRST_DEGREE_CONNECTIONS:{liveData:"/ta/federator",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{scriptQueryAppend:"types=my1stnetwork,company",responseSchema:{resultsList:"resultList",fields:["headLine","displayName","subLine","url","sourceID","imageUrl","id","misc"]}}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.FEDERATOR)?this.liveData:LI.TypeaheadDataSourceUrls.FEDERATOR;
+return LI.DataSource.Helper.createFederatorXHRDataSource(this.liveData,this.config,{my1stnetwork:LI.i18n.get("typeahead2-search-connections"),company:LI.i18n.get("typeahead2-search-companies")})
+}},TYPE_COMPANIES_AND_NETWORK:{liveData:"/ta/federator",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{scriptQueryAppend:"types=mynetwork,company",responseSchema:{resultsList:"resultList",fields:["headLine","displayName","subLine","url","sourceID","imageUrl","id","misc"]}}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.FEDERATOR)?this.liveData:LI.TypeaheadDataSourceUrls.FEDERATOR;
+return LI.DataSource.Helper.createFederatorXHRDataSource(this.liveData,this.config,{mynetwork:LI.i18n.get("typeahead2-search-connections"),company:LI.i18n.get("typeahead2-search-companies")})
+}},TYPE_GROUP_MEMBERS_AND_COMPANIES:{liveData:"/ta/federator",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{scriptQueryAppend:"types=groupmembers,company",responseSchema:{resultsList:"resultList",fields:["headLine","displayName","subLine","url","sourceID","imageUrl","id","misc"]}}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.FEDERATOR)?this.liveData:LI.TypeaheadDataSourceUrls.FEDERATOR;
+return LI.DataSource.Helper.createFederatorXHRDataSource(this.liveData,this.config,{groupmembers:LI.i18n.get("typeahead2-search-group-members"),company:LI.i18n.get("typeahead2-search-companies")})
+}},TYPE_GROUP_MEMBERS:{liveData:"/ta/federator",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{scriptQueryAppend:"types=groupmembers",responseSchema:{resultsList:"resultList",fields:["headLine","displayName","subLine","url","sourceID","imageUrl","id","misc"]}}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.FEDERATOR)?this.liveData:LI.TypeaheadDataSourceUrls.FEDERATOR;
+return LI.DataSource.Helper.createFederatorXHRDataSource(this.liveData,this.config,{groupmembers:LI.i18n.get("typeahead2-search-group-members")})
+}},TYPE_GROUP_MEMBERS_AND_NETWORK:{liveData:"/ta/federator",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{scriptQueryAppend:"types=groupmembers,my1stnetwork",responseSchema:{resultsList:"resultList",fields:["headLine","displayName","subLine","url","sourceID","imageUrl","id","misc"]}}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.FEDERATOR)?this.liveData:LI.TypeaheadDataSourceUrls.FEDERATOR;
+return LI.DataSource.Helper.createFederatorXHRDataSource(this.liveData,this.config,{groupmembers:LI.i18n.get("typeahead2-search-group-members"),my1stnetwork:LI.i18n.get("typeahead2-search-connections")})
+}},TYPE_DISCUSSION_PARTICIPANTS:{liveData:"/ta/discussionparticipants",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultLocalConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.DISCUSSION_PARTICIPANTS)?this.liveData:LI.TypeaheadDataSourceUrls.DISCUSSION_PARTICIPANTS;
+return LI.DataSource.Helper.createLocalXHRDataSource(a,b,this.config)
+}},TYPE_DISCUSSION_PARTICIPANTS_COMPANIES_FIRST_DEGREE_CONNECTIONS:{liveData:"/ta/federator",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{scriptQueryAppend:"types=discussionparticipants,my1stnetwork,company",responseSchema:{resultsList:"resultList",fields:["headLine","displayName","subLine","url","sourceID","imageUrl","id","misc"]}}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.FEDERATOR)?this.liveData:LI.TypeaheadDataSourceUrls.FEDERATOR;
+return LI.DataSource.Helper.createFederatorXHRDataSource(this.liveData,this.config,{my1stnetwork:LI.i18n.get("typeahead2-search-connections"),company:LI.i18n.get("typeahead2-search-companies"),discussionparticipants:LI.i18n.get("typeahead2-search-discussion-participants")})
+}},TYPE_MY_GROUPS:{liveData:"/typeahead/mygroup",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.MY_GROUPS)?this.liveData:LI.TypeaheadDataSourceUrls.MY_GROUPS;
+return LI.DataSource.Helper.createXHRDataSource(this.liveData,this.config)
+}},TYPE_UNIVERSAL_SEARCH:{liveData:"/ta/federator",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{scriptQueryAppend:"types=mynetwork,company,group,sitefeature,skill",responseSchema:{resultsList:"resultList",metaFields:{tarId:"meta.tarId"},fields:["headLine","displayName","subLine","url","sourceID","imageUrl","id","misc"]}}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.FEDERATOR)?this.liveData:LI.TypeaheadDataSourceUrls.FEDERATOR;
+return LI.DataSource.Helper.createFederatorXHRDataSource(this.liveData,this.config,{mynetwork:LI.i18n.get("typeahead2-search-connections"),company:LI.i18n.get("typeahead2-search-companies"),group:LI.i18n.get("typeahead2-search-groups"),sitefeature:LI.i18n.get("typeahead2-search-features"),skill:LI.i18n.get("typeahead2-search-skills")})
+}},TYPE_CAP_PROSPECTS_PROJECTS_JOBS:{liveData:"/cap/lookup/capTaAjax",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{scriptQueryAppend:"types=Job,Project,Prospect",responseSchema:{resultsList:"resultList",fields:["displayName","id","headLine","subLine","imageUrl","sourceID"]},maxCacheEntries:10}),create:function(a){var b=YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls)||YAHOO.lang.isUndefined(LI.TypeaheadDataSourceUrls.CAP_PROSPECTS_PROJECTS_JOBS)?this.liveData:LI.TypeaheadDataSourceUrls.CAP_PROSPECTS_PROJECTS_JOBS;
+return LI.DataSource.Helper.createFederatorXHRDataSource(this.liveData,this.config,{Prospect:LI.i18n.get("typeahead2-cap-prospects"),Job:LI.i18n.get("typeahead2-cap-jobs"),Project:LI.i18n.get("typeahead2-cap-projects")})
+}},TYPE_CAP_PROJECTS:{liveData:"/cap/lookup/capTaProjectsAjax",config:YAHOO.lang.merge(LI.DataSource.Helper.defaultXHRConfig,{scriptQueryAppend:"types=Project",responseSchema:{resultsList:"resultList",fields:["displayName","id","headLine","subLine","imageUrl","sourceID"]},maxCacheEntries:10}),create:function(a){return LI.DataSource.Helper.createFederatorXHRDataSource(this.liveData,this.config,{Project:LI.i18n.get("typeahead2-cap-projects")})
+}}};LI.define("DataSourceAggregator2");
+LI.DataSourceAggregator2=function(b,a){this.config=a||{};
+this.sources=b||{};
+this.results={};
+this.numSourcesLoading=0;
+this.onAllDataRequest=new YAHOO.util.CustomEvent("allDataRequest",this);
+this.onAllDataResponse=new YAHOO.util.CustomEvent("allDataResponse",this);
+LI.DataSourceAggregator2.superclass.constructor.call(this,null,a)
+};
+YAHOO.lang.extend(LI.DataSourceAggregator2,YAHOO.util.LocalDataSource,{sources:{},results:{},numSourcesLoading:0,formatQuery:function(b,c){var a=b.dataType;
+if(a===YAHOO.util.DataSourceBase.TYPE_XHR){if(!b.connMethodPost){c="?"+(b.scriptQueryParam||"query")+"="+c+(b.scriptQueryAppend?("&"+b.scriptQueryAppend):"")
+}else{c=(b.scriptQueryParam||"query")+"="+c+(b.scriptQueryAppend?("&"+b.scriptQueryAppend):"")
+}}else{if(a===YAHOO.util.DataSourceBase.TYPE_SCRIPTNODE){c="&"+(b.scriptQueryParam||"query")+"="+c+(b.scriptQueryAppend?("&"+b.scriptQueryAppend):"")
+}}return c
+},sendRequest:function(f,h,c){var d=YAHOO.util.DataSourceBase._nTransactionId++,g,a,b,i,e=h.scope;
+this.results={};
+this.numSourcesLoading=0;
+for(g in this.sources){if(this.sources.hasOwnProperty(g)){this.numSourcesLoading+=1
+}}this.onAllDataRequest.fire();
+this.maxResultsDisplayed=e.maxResultsDisplayed;
+this.maxResultsPerSource=-1;
+for(b in this.sources){i={success:this.sourceSuccessCallback,failure:this.sourceFailureCallback,scope:this,argument:{sourceID:b,query:f,skipFilterAndSort:true}};
+a=this.sources[b];
+a.sendRequest(this.formatQuery(a,f),i,c)
+}if(!this.onAllDataResponse.subscribers.length){this.onAllDataResponse.subscribe(function(){var j={};
+this.results=this.doBeforeParseData(f,this.results,this);
+j.results=this.results.resultList;
+j.meta={};
+j.error=false;
+if(!j.error){j=this.doBeforeCallback(f,j,j,h)
+}else{j.error=true;
+this.fireEvent("dataErrorEvent",{request:f,response:j,callback:h,caller:c,message:YAHOO.util.DataSourceBase.ERROR_DATANULL})
+}j.tId=d;
+YAHOO.util.DataSourceBase.issueCallback(h,[f,j],j.error,c)
+})
+}return d
+},sourceSuccessCallback:function(e,d,b){var c=b.sourceID,a=this.config.doWithSourceSuccessCallback||null;
+if(a&&typeof a==="function"){d=a(d,this.results)
+}if(this.results.hasOwnProperty(c)&&this.results[c].hasOwnProperty("resultList")){this.results[c].resultList=this.results[c].resultList.concat(d.results)
+}else{this.results[c]={resultList:d.results}
+}this.numSourcesLoading--;
+if(this.numSourcesLoading===0){this.onAllDataResponse.fire()
+}},sourceFailureCallback:function(){this.numSourcesLoading--;
+if(this.numSourcesLoading===0){this.onAllDataResponse.fire()
+}},flushCache:function(){var a,b;
+for(b in this.sources){a=this.sources[b];
+a.flushCache()
+}},destroy:function(){this.flushCache();
+this.source={};
+this.results=[];
+this.numSourcesLoading=0
+}});LI.define("Typeahead2.RenderHandlerHelpers");
+LI.Typeahead2.RenderHandlerHelpers={truncateStrToWidth:function(m,l,b){var h=m,j,a,c,n,f,p,d,s,g="",e=-1,r=0,k,q;
+b=b||{};
+j={ellipEntity:b.ellipEntity||"&hellip;",textStyles:b.textStyles||{},keepStr:b.keepStr||"",keepStrCaseSensitive:b.keepStrCaseSensitive||false,keepStrEllipAfter:b.keepStrEllipAfter||false,tailStr:b.tailStr||"",thresholdLength:b.thresholdLength};
+j=YAHOO.lang.merge(j,b);
+if(j.keepStr){j.keepStrRegExp=new RegExp(j.keepStr,(j.keepStrCaseSensitive?"":"i"));
+j.keepStr=m.match(j.keepStrRegExp)
+}if(!h){return h
+}if(j.thresholdLength&&h.length<j.thresholdLength){return h+j.tailStr
+}a=document.createElement("span");
+for(c in j.textStyles){if(j.textStyles.hasOwnProperty(c)){YDom.setStyle(a,c,j.textStyles[c])
+}}YDom.setStyle(a,"visibility","hidden");
+YDom.setStyle(a,"display","inline-block");
+YDom.setStyle(a,"padding","0px");
+document.body.appendChild(a);
+a.innerHTML=h;
+n=/&#?\w*$/;
+f=/\\x[0-9a-fA-F]?$/;
+p=/\\u[0-9a-fA-F]{0,3}$/;
+d=[n];
+s=d.length;
+g="";
+e=-1;
+if(a.clientWidth>l){r=0;
+q=m.length;
+while(true){k=r+Math.ceil((q-r)/2);
+if(k===q||k===r){break
+}a.innerHTML=m.substring(0,k)+j.ellipEntity;
+if(j.keepStr){if(!j.keepStrRegExp.test(a.innerHTML)){a.innerHTML+=j.keepStr+(j.keepStrEllipAfter?j.ellipEntity:"")
+}}if(j.tailStr){a.innerHTML+=j.tailStr
+}if(a.clientWidth>l){q=k
+}else{r=k
+}}h=m.substring(0,r).replace(/(\s.)?\s*$/,"");
+e=-1;
+for(var o=0;
+o<s;
+o++){e=h.search(d[o]);
+if(e>0){h=h.substring(0,e)
+}}h+=j.ellipEntity;
+if(j.keepStr){if(!j.keepStrRegExp.test(h)){h+=j.keepStr+(j.keepStrEllipAfter?j.ellipEntity:"")
+}}}if(j.tailStr){h+=j.tailStr
+}document.body.removeChild(a);
+return h
+},formatResultFunctionFactory:function(a){a={formatCategoryResult:a.formatCategoryResult||function(c,b,e,f,d){c+="<h3><strong>"+b+"</strong></h3>";
+return c
+},formatItemResult:a.formatItemResult||function(b,d,f,c){var e=d;
+if(e.imageUrl&&e.imageUrl.length>0){b+='<img src="'+e.imageUrl+'" />'
+}if(e.headLine&&e.headLine.length>0){b+='<h4 class="item-headline">'+e.headLine+"</h4>"
+}if(e.headLine!==null&&e.subLine&&e.subLine!==""){b+='<p class="item-subline">'+e.subLine+"</p>"
+}return b
+}};
+return function(e,g,d){var c="",f,b;
+if(e.sourceID&&e.type==="category"){f=this.dataSource.categoryI18nMap||null;
+b=(f&&f.hasOwnProperty(e.sourceID))?f[e.sourceID]:e.sourceID;
+return a.formatCategoryResult(c,b,e,g,d)
+}else{return a.formatItemResult(c,e,g,d)
+}return c
+}
+},doBeforeExpandContainerFunctionFactory:function(a){a={showCategory:(a.showCategory===false)?false:true,includeRank:(a.includeRank===true),truncateConfigs:a.truncateConfigs||null};
+return function(e,v,r,q){var f=this,z=[],k,s,l=this.getListEl(),m=l.childNodes,w,p,h="",y=0,o=a.showCategory,d="item",t,u,g,c="rank-",x,n,j,b;
+for(w=0,p=Math.min(m.length,q.length);
+w<p;
+w++){k=m[w];
+t=q[w];
+u=t.type;
+g=t.rank||"0";
+h=t.sourceID||"";
+if(YDom.hasClass(k,f.highlightClassName)){z.push(f.highlightClassName)
+}if(YDom.hasClass(k,f.preHighlightClassName)){z.push(f.preHighlightClassName)
+}if(a.includeRank){z.push(c+g)
+}if((w===0)||(o&&u===d&&w===1)){z.push("top")
+}if(!u){if(!s){z.push("first")
+}s=k
+}else{if(o&&u==="category"){z.push("category");
+z.push(h);
+YDom.addClass(l,"hasCategory");
+y+=1
+}else{if(o&&u===d){z.push(d);
+z.push(h);
+if(a.truncateConfigs){for(x in a.truncateConfigs){if(a.truncateConfigs.hasOwnProperty(x)){n=YAHOO.lang.merge({},a.truncateConfigs[x]);
+b=Y$(n.selector,k,true);
+n.keepStr="<strong>"+r+"</strong>";
+if(t.sourceID==="mynetwork"&&x==="headLine"&&t.misc&&t.misc.degree){n.tailStr='<span class="separator">&middot;</span><span class="typeahead-degree">'+t.misc.degree+"</span>"
+}if(b){j=b.innerHTML;
+b.innerHTML=LI.Typeahead2.RenderHandlerHelpers.truncateStrToWidth(j,n.width,n)
+}}}}if(!s||(s&&!YDom.hasClass(s,h))){z.push("first");
+YDom.addClass(s,"last")
+}if(y%2===0){z.push("secondary")
+}else{z.push("primary")
+}s=k
+}}}k.className=z.join(" ");
+z=[]
+}if(s){YDom.addClass(s,"last");
+YDom.addClass(s,"bottom");
+if(l.getElementsByTagName("img").length>0){YDom.addClass(l,"hasImage")
+}}return true
+}
+}};
+LI.define("Typeahead2.RenderHandlers");
+LI.Typeahead2.RenderHandlers={DEFAULT:{resultTypeList:false,applyLocalFilter:false,animVert:false,useIFrame:true,allowBrowserAutocomplete:true,forceSelection:false,forceSelectionAndRevert:false,autoHighlight:false,typeahead:true,queryMatchContains:false,queryMatchSubset:false,suppressInputUpdate:true,formatResult:LI.Typeahead2.RenderHandlerHelpers.formatResultFunctionFactory({}),doBeforeExpandContainer:LI.Typeahead2.RenderHandlerHelpers.doBeforeExpandContainerFunctionFactory({})},AUTOCHOOSE:{forceSelection:false,forceSelectionAndRevert:false,autoHighlight:true},FORCE_SELECTION:{forceSelection:true,forceSelectionAndRevert:true,autoHighlight:true},HEADLINE_ONLY:{formatResult:LI.Typeahead2.RenderHandlerHelpers.formatResultFunctionFactory({formatItemResult:function(a,c,e,b){var d=c;
+if(d.headLine&&d.headLine.length>0){a+='<h4 class="item-headline">'+d.headLine+"</h4>"
+}if(d.headLine!==null&&d.subLine&&d.subLine!==""){a+='<p class="item-subline">'+d.subLine+"</p>"
+}return a
+}})},HIDE_CATEGORIES:{formatResult:LI.Typeahead2.RenderHandlerHelpers.formatResultFunctionFactory({formatCategoryResult:function(b,a,d,e,c){return""
+}}),doBeforeExpandContainer:LI.Typeahead2.RenderHandlerHelpers.doBeforeExpandContainerFunctionFactory({showCategory:false})},UNIVERSAL_SEARCH:{doBeforeExpandContainer:LI.Typeahead2.RenderHandlerHelpers.doBeforeExpandContainerFunctionFactory({truncateConfigs:{headLine:{selector:".item-headline",width:"218",textStyles:{"font-weight":"bold","font-size":"12px"},keepStrCaseSensitive:false,keepStrEllipAfter:true},subLine:{selector:".item-subline",textStyles:{"font-weight":"normal","font-size":"11px"},width:"200"}}})},UNIVERSAL_SEARCH_VOLTRON:{doBeforeExpandContainer:LI.Typeahead2.RenderHandlerHelpers.doBeforeExpandContainerFunctionFactory({truncateConfigs:{headLine:{selector:".item-headline",width:"368",textStyles:{"font-weight":"bold","font-size":"12px"},keepStrCaseSensitive:false,keepStrEllipAfter:true,thresholdLength:45}},includeRank:true})}};LI.define("Typeahead2.EventHelper");
+LI.Typeahead2.EventHelper={constants:{NO_MATCH_ID_VALUE:""},populateInputField:function(b,a,c){if(c&&(c.rawText||c.displayName||c.headLine)){if(c.rawText){b.value=c.rawText
+}else{if(LI.htmlUnencode){b.value=LI.htmlUnencode(c.displayName)||LI.htmlUnencode(c.headLine)
+}else{b.value=c.displayName||c.headLine
+}}}if(a&&c&&c.id){a.value=c.id||LI.Typeahead2.EventHelper.constants.NO_MATCH_ID_VALUE
+}},handleUnmatchSelect:function(b,a,c){if(a&&(b.value!==b.defaultValue||a.value!==a.defaultValue)){a.value=LI.Typeahead2.EventHelper.constants.NO_MATCH_ID_VALUE
+}if(c&&YAHOO.lang.trim(b.value)!==""){b.value=b.defaultValue;
+if(a){a.value=a.defaultValue
+}}},clearInputField:function(b,a){b.value="";
+if(a){a.value=LI.Typeahead2.EventHelper.constants.NO_MATCH_ID_VALUE
+}},goToUrl:function(e,d,f){var c="",b=false,a;
+if(e.url){c=e.url;
+a=new Lui.Url(c);
+if(d){a.appendParameter("trk",d)
+}if(f){a.appendParameter("trkInfo",f)
+}if(!b){document.location.href=a.toExternalForm()
+}}},getNoResults:(function(){var a=null,b;
+return function(){if(a===null){b=document.createElement("div");
+b.className="typeahead-noresults";
+YEvent.onDOMReady(function(){document.body.appendChild(b)
+});
+a=b
+}return a
+}
+}()),toggleNoResults:function(a,d,b,i,c){if(YDom.get(i)){var j=YDom.get(i);
+if(d){YDom.addClass(j,"show");
+if(c){c.value=LI.Typeahead2.EventHelper.constants.NO_MATCH_ID_VALUE
+}}else{if(c.value!==LI.Typeahead2.EventHelper.constants.NO_MATCH_ID_VALUE){YDom.removeClass(j,"show")
+}}}else{var e=LI.Typeahead2.EventHelper.getNoResults(),h=b||LI.i18n.get("typeahead2-no-matching-results"),g=[],f={};
+if(!h){h="No Results"
+}if(d){e.innerHTML=h;
+f=YDom.getRegion(a);
+g[0]=f.left;
+g[1]=f.bottom;
+YDom.setStyle(e,"display","block");
+YDom.setXY(e,g)
+}else{YDom.setStyle(e,"display","none");
+if(c){c.value=LI.Typeahead2.EventHelper.constants.NO_MATCH_ID_VALUE
+}}}},getLoadingImg:(function(c){var a={},b;
+return function(d){if(!a.hasOwnProperty(d)){b=new Image();
+b.src=d;
+YDom.addClass(b,"typeahead-loading-icon");
+a[d]=b
+}return a[d]
+}
+}()),toggleLoadingImg:function(a,c,g,e){var f,d,b;
+if(e&&e.loaderClass){b=e.loaderClass;
+d=Y$("."+b,a.parentNode,true);
+if(!d){f=document.createElement("span");
+YDom.addClass(f,b);
+if(e.loaderText){f.innerHTML=e.loaderText
+}d=a.parentNode.appendChild(f)
+}}else{if(g){f=LI.Typeahead2.EventHelper.getLoadingImg(g);
+d=Y$(".typeahead-loading-icon",a.parentNode,true);
+if(!d){d=a.parentNode.appendChild(f)
+}}}if(c){YDom.addClass(d,"loading")
+}else{YDom.removeClass(d,"loading")
+}}};
+LI.define("Typeahead2.EventHandlers");
+LI.Typeahead2.EventHandlers={DEFAULT:{itemSelectEvent:function(e,d){var c=d[0],f=d[2],b=c.getInputEl(),a=c.hiddenField;
+if(f.type==="category"){return
+}LI.Typeahead2.EventHelper.populateInputField(b,a,f,c.forceSelectionAndRevert)
+},dataRequestEvent:function(c,b){var a=b[0];
+LI.Typeahead2.EventHelper.toggleLoadingImg(a.getInputEl(),true,a.loadingImgSrc,a.loadingImgConfig)
+},dataReturnEvent:function(c,b){var a=b[0],e=b[1],d=b[2];
+LI.Typeahead2.EventHelper.toggleLoadingImg(a.getInputEl(),false,a.loadingImgSrc,a.loadingImgConfig);
+if(a.hiddenField&&(d.length===0&&YAHOO.lang.trim(e)!=="")){a.hiddenField.value=LI.Typeahead2.EventHelper.constants.NO_MATCH_ID_VALUE
+}else{YDom.removeClass(YDom.get(a.noResultsEl),"show")
+}},dataErrorEvent:function(c,b){var a=b[0];
+LI.Typeahead2.EventHelper.toggleLoadingImg(a.getInputEl(),false,a.loadingImgSrc,a.loadingImgConfig);
+a.collapseContainer()
+},unmatchedItemSelectEvent:function(c,b){var a=b[0];
+LI.Typeahead2.EventHelper.handleUnmatchSelect(this.getInputEl(),this.hiddenField,this.forceSelectionAndRevert)
+},textboxFocusEvent:function(c,b){var a=b[0];
+if(YAHOO.env.ua.gecko&&LI.i18n&&LI.i18n.isCJK()){a.enableIntervalDetection()
+}},itemArrowToEvent:function(h,g){var b=g[0],a=g[1],c=b.getListItemData(a),i=(typeof b._nRealKeyCode!=="undefined")?b._nRealKeyCode:b._nKeyCode,d,e,f;
+i=(i===40||i===38)?i:40;
+if(c&&c.type==="category"){if(b.isContainerOpen()){b._moveSelection(i)
+}else{b._toggleHighlight(a,"from");
+d=b.getListItemIndex(a);
+e=(i===40)?(d+1):(d-1);
+f=b._elList.childNodes[e];
+if(f){b._toggleHighlight(f,"to");
+if(b.typeahead){b._updateValue(f);
+b._sCurQuery=f._sResultMatch
+}}}}}},USE_NO_RESULTS:{containerExpandEvent:function(c,b){var a=b[0];
+LI.Typeahead2.EventHelper.toggleNoResults(a.getInputEl(),false,a.noResultsText,a.noResultsEl,a.hiddenField)
+},dataReturnEvent:function(c,b){var a=b[0],f=b[1],e=b[2],d=a.getInputEl();
+LI.Typeahead2.EventHandlers.DEFAULT.dataReturnEvent.apply(a,arguments);
+if(e.length===0&&YAHOO.lang.trim(f)!==""){LI.Typeahead2.EventHelper.toggleNoResults(d,true,a.noResultsText,a.noResultsEl,a.hiddenField)
+}},dataErrorEvent:function(c,b){var a=b[0];
+LI.Typeahead2.EventHandlers.DEFAULT.dataErrorEvent.apply(a,arguments);
+LI.Typeahead2.EventHelper.toggleNoResults(a.getInputEl(),true,a.noResultsText,a.noResultsEl,a.hiddenField)
+},textboxBlurEvent:function(c,b){var a=b[0];
+LI.Typeahead2.EventHelper.toggleNoResults(a.getInputEl(),false,a.noResultsText,a.noResultsEl,a.hiddenField)
+},textboxKeyEvent:function(c,b){var a=b[0],d=this.getInputEl();
+if(d.value===""){LI.Typeahead2.EventHelper.toggleNoResults(a.getInputEl(),false,a.noResultsText,a.noResultsEl,a.hiddenField)
+}}},GO_TO_URL_ON_SELECT:{itemSelectEvent:function(e,d){var c=d[0],h=d[2],a=null,b=null,g="string",f="function";
+if(c.itemUrlTrackingKey){if(typeof c.itemUrlTrackingKey===g){a=c.itemUrlTrackingKey
+}else{if(typeof c.itemUrlTrackingKey===f){a=c.itemUrlTrackingKey(e,d)
+}}}if(c.itemUrlTrackingInfo){if(typeof c.itemUrlTrackingInfo===g){b=c.itemUrlTrackingInfo
+}else{if(typeof c.itemUrlTrackingInfo===f){b=c.itemUrlTrackingInfo(e,d)
+}}}if(h.type==="category"){return
+}LI.Typeahead2.EventHelper.goToUrl(h,a,b)
+}}};

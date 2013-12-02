@@ -1,0 +1,70 @@
+LI.define("Login");
+LI.Login=function(g,d){d=d||{};
+d={autoFocus:(d.autoFocus!==false)?true:false,disableSubmit:d.disableSubmit||false,submitId:d.submitId||"btn-login",showErrorOnLoad:d.showErrorOnLoad||false,errorOnLoadMessage:d.errorOnLoadMessage||"",resetPasswordURL:d.resetPasswordURL||"",passwordReminderMessage:d.passwordReminderMessage||""};
+var b=YDom.getElementsBy(function(i){return(i.type==="text"||i.type==="password")
+},"input",g),a=YDom.get(d.submitId);
+function c(){for(var k=0,j=b.length;
+k<j;
+k++){if(b[k].value===""){b[k].focus();
+break
+}}}function f(){if(b[0].value!==""&&b[1].value!==""){a.disabled=false
+}else{a.disabled=true
+}}function e(){var k={},m,n,p,l,j,o;
+k["session_password-login"]=d.errorOnLoadMessage;
+for(m=0,l=YDom.getElementsByClassName("error","span"),j=l.length;
+m<j;
+m++){o=l[m];
+n=o.id.replace(/-error$/,"");
+if(k[n]){o.innerHTML=k[n]+'<a class="reg-autologin-error" id="password-reminder" href="'+d.resetPasswordURL+'">'+d.passwordReminderMessage+"</a>"+"<br>"
+}else{o.innerHTML=""
+}}p=YDom.get("session_password-login");
+YDom.addClass(p,"error");
+p.focus()
+}if(d.autoFocus){c()
+}if(d.disableSubmit){f();
+var h=setInterval(f,100)
+}if(d.showErrorOnLoad){e()
+}YEvent.onDOMReady(function(m){var j=YDom.get("password-reminder"),l=j.href,k=YDom.get("session_key-login");
+function i(n){var o=k.value;
+YEvent.getTarget(n).href=(LI.patterns.email.test(o))?LI.addParams(l,{"email":o}):l
+}YEvent.addListener(j,"click",i,true)
+})
+};
+(function(){function a(){var e,c,f=["recaptcha_reload_btn","recaptcha_switch_audio_btn","recaptcha_switch_img_btn","recaptcha_whatsthis_btn"],d,b=f.length;
+for(d=0;
+d<b;
+d++){e=f[d];
+c=YDom.get(e);
+if(c){c.setAttribute("href","#")
+}}}YEvent.onContentReady("recaptcha_reload_btn",a)
+})();var langSwitch=function(){var c;
+function b(){var j;
+var g=YDom.get("nav-utility-lang");
+var h=g.getElementsByTagName("a");
+YEvent.on(g,"click",function(){var i=this;
+if(YDom.hasClass(i,"hover")){return
+}j=setTimeout(function(){YDom.addClass(i,"hover")
+},0)
+});
+YEvent.on(g,"mouseout",function(k){var l=this;
+var i=YEvent.getRelatedTarget(k);
+if(l!=i&&!YDom.isAncestor(l,i)){YDom.removeClass(l,"hover")
+}clearTimeout(j)
+});
+h[0].onclick=function(){return false
+};
+var d=YDom.get("lang-list");
+var f=d.getElementsByTagName("a");
+for(var e=0;
+f.length>e;
+e++){f[e].onclick=function(){a(this.lang);
+return false
+}
+}}function a(d){c.i18nLang.value=d;
+c.submit()
+}return{init:function(){if(!document.languageSelectorForm){return false
+}c=document.languageSelectorForm;
+b()
+}}
+}();
+YEvent.on(window,"load",langSwitch.init);

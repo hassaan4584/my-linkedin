@@ -1,0 +1,25 @@
+<div>
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link">Home</a>
+                </li>
+               
+                <li class="nav-item">
+                    <a class="nav-link">Profile</a>
+                </li>
+               
+                <li class="nav-item">
+                    <a class="nav-link">Network</a>
+                </li>
+               
+                <li class="nav-item">
+                    <a class="nav-link">Jobs</a>
+                </li>
+               
+                <li class="nav-item">
+                <a class="nav-link">Intrests</a>
+                </li>
+
+
+            </ul>   
+        </div>

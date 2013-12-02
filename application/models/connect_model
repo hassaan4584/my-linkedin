@@ -1,0 +1,21 @@
+<?php
+
+class Connect_model extends CI_Model{
+	function __construct(){
+		parent::__construct();
+	}
+
+
+
+	function connect()
+	{
+		$friendId=$this->input->get('id');
+		$userId=$this->session->userdata('userID');
+
+		$data=array('requestSenderId'=>$userId,'requestReceiverId'=>$friendId,'status'=>'pending');
+		$this->db->insert('requests',$data);
+		return true;
+
+
+
+	}

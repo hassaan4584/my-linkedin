@@ -1,0 +1,356 @@
+LI.define("Typeahead2");
+LI.Typeahead2=function(d,y){var v=null,j,p,n=d,k=null,c=10,m=5,l={TYPEAHEAD_RESULTS_CONTAINER:"typeahead-results-container"},o=this,q,e,x,g,t,i="function";
+y={queryAppend:y.queryAppend||null,source:y.source||null,hiddenField:y.hiddenField||null,containerEl:YDom.get(y.containerEl)||document.body,maxResultsDisplayed:y.maxResultsDisplayed||c,maxResultsPerSource:y.maxResultsPerSource||m,resultsClass:y.resultsClass||"",resultsID:y.resultsID||null,renderAs:y.renderAs||["DEFAULT"],handleEventAs:y.handleEventAs||["DEFAULT"],itemUrlTrackingKey:y.itemUrlTrackingKey||null,itemUrlTrackingInfo:y.itemUrlTrackingInfo||null,itemSelectEventHandler:y.itemSelectEventHandler||null,unmatchedItemSelectEventHandler:y.unmatchedItemSelectEventHandler||null,loadingImgSrc:y.loadingImgSrc||null,loadingImgConfig:{loaderClass:(y.loadingImgConfig?y.loadingImgConfig.loaderClass:null)||null,loaderText:(y.loadingImgConfig?y.loadingImgConfig.loaderText:null)||null},noResultsText:y.noResultsText||null,noResultsEl:y.noResultsEl||null,onDataReturn:y.onDataReturn||null,onItemArrowTo:y.onItemArrowTo||null,onItemArrowFrom:y.onItemArrowFrom||null};
+function A(E){var D=[{name:"hiddenField",value:y.hiddenField},{name:"maxResultsPerSource",value:y.maxResultsPerSource},{name:"loadingImgSrc",value:y.loadingImgSrc},{name:"loadingImgConfig",value:y.loadingImgConfig},{name:"noResultsText",value:y.noResultsText},{name:"noResultsEl",value:y.noResultsEl},{name:"itemUrlTrackingKey",value:y.itemUrlTrackingKey},{name:"itemUrlTrackingInfo",value:y.itemUrlTrackingInfo}];
+for(var C=0,B=D.length;
+C<B;
+C++){if(!E[D[C].name]){E[D[C].name]=D[C].value
+}}}function b(D,H){var C={},E,G,J,B={},F,I=LI.Typeahead2.RenderHandlers;
+if(YAHOO.util.Lang.isObject(I)){for(E=0,J=H.length;
+E<J;
+E++){if(typeof H[E]==="string"){F=H[E];
+if(I.hasOwnProperty(F)){B=I[H[E]]
+}else{}}else{if(typeof H[E]==="object"){B=H[E]
+}}C=YAHOO.lang.merge(C,B)
+}}else{}for(G in C){if(C.hasOwnProperty(G)){D[G]=C[G]
+}}}function r(E,G){var C={},F,I,D,B={},J,H=LI.Typeahead2.EventHandlers;
+if(YAHOO.util.Lang.isObject(H)){for(F=0,D=G.length;
+F<D;
+F++){if(typeof G[F]==="string"){J=G[F];
+if(H.hasOwnProperty(J)){B=H[G[F]]
+}else{}}else{if(typeof G[F]==="object"){B=G[F]
+}}C=YAHOO.lang.merge(C,B)
+}}else{}if(o.onItemSelect){E.itemSelectEvent.subscribe(o.onItemSelect,o,true)
+}if(o.onUnmatchedItemSelect){E.unmatchedItemSelectEvent.subscribe(o.onUnmatchedItemSelect,o,true)
+}if(o.onDataReturn){E.dataReturnEvent.subscribe(o.onDataReturn,o,true)
+}if(o.onItemArrowTo){E.itemArrowToEvent.subscribe(o.onItemArrowTo,o,true)
+}if(o.onItemArrowFrom){E.itemArrowFromEvent.subscribe(o.onItemArrowFrom,o,true)
+}for(I in C){if(C.hasOwnProperty(I)){E[I].subscribe(C[I])
+}}}function f(){j=new YAHOO.widget.AutoComplete(n,k,v,{maxResultsDisplayed:y.maxResultsDisplayed});
+j._onTextboxFocus(null,j);
+A(j);
+b(j,y.renderAs);
+r(j,y.handleEventAs)
+}function a(){k=document.createElement("div");
+k.className=l.TYPEAHEAD_RESULTS_CONTAINER;
+if(y.resultsClass){YDom.addClass(k,y.resultsClass)
+}if(y.resultsID){k.id=y.resultsID
+}if(YAHOO.env.ua.ie>0){y.containerEl.appendChild(k)
+}else{y.containerEl.insertBefore(k,y.containerEl.firstChild)
+}}function w(){if(!YAHOO.lang.isUndefined(o.source)&&y.source!==o.source){y.source=o.source
+}if(y.source){v=LI.DataSource.Factory.createSource(n,y.source)
+}else{throw"You haven't defined a source for Typeahead"
+}if(!v){throw"The data source is invalid"
+}}function s(){if(!p){if(y.hiddenField){y.hiddenField=YDom.get(y.hiddenField)
+}w();
+a();
+f()
+}}function h(){var C=LI.Typeahead2Dependencies.scripts,B=C.length,G=B,F,D,E;
+if(LI.Typeahead2.lazyLoad.fetchingDependencies){return
+}D=function(){G--;
+if(G===0){LI.Typeahead2.lazyLoad.onDependenciesLoaded.fire()
+}};
+E=function(){LI.Typeahead2.lazyLoad.fetchingDependencies=false;
+throw"Failed fetching dependencies."
+};
+if(B){LI.Typeahead2.lazyLoad.fetchingDependencies=true
+}for(F=0;
+F<B;
+F++){YAHOO.util.Get.script(C[F],{onSuccess:D,onFailure:E})
+}}function u(){YEvent.removeListener(d,"focus",u);
+if(YAHOO.util.Lang.isObject(LI.DataSource)&&YAHOO.util.Lang.isObject(LI.Typeahead2.RenderHandlers)){s()
+}else{h()
+}LI.Typeahead2.lazyLoad.onDependenciesLoaded.subscribe(s,o,true)
+}YEvent.on(d,"focus",u);
+q=y.itemSelectEventHandler;
+if(q&&typeof q===i){this.onItemSelect=q
+}e=y.unmatchedItemSelectEventHandler;
+if(e&&typeof e===i){this.onUnmatchedItemSelect=e
+}x=y.onDataReturn;
+if(x&&typeof x===i){this.onDataReturn=x
+}g=y.onItemArrowTo;
+if(g&&typeof g===i){this.onItemArrowTo=g
+}t=y.onItemArrowFrom;
+if(t&&typeof t===i){this.onItemArrowFrom=t
+}function z(B){j._onTextboxKeyDown(B,j)
+}this.sendQuery=function(B){j.sendQuery.call(j,B)
+};
+this.expandContainer=function(){j.expandContainer.call(j)
+};
+this.isContainerOpen=function(){return j.isContainerOpen.call(j)
+};
+this.isFocused=function(){return j.isFocused.call(j)
+};
+this.collapseContainer=function(){if(j&&j.collapseContainer){j.collapseContainer.call(j)
+}};
+this.flushCache=function(){if(v){v.flushCache()
+}};
+this.setMaxResultsPerSource=function(B){y.maxResultsPerSource=B;
+if(j){j.maxResultsPerSource=y.maxResultsPerSource
+}this.flushCache()
+};
+this.destroy=function(){YEvent.removeListener(d,"focus",u);
+if(j){j.destroy.call(j);
+y.containerEl.removeChild(k)
+}p=true
+};
+this.init=u;
+this.proxyKeyDown=z
+};
+LI.Typeahead2.lazyLoad={fetchingDependencies:false,onDependenciesLoaded:new YAHOO.util.CustomEvent("TA2DependenciesLoaded")};
+LI.Typeahead2.prototype={onItemSelect:function(){},onUnmatchedItemSelect:function(){},onDataReturn:function(){},onItemArrowTo:function(){},onItemArrowFrom:function(){}};LI.define("Registration.AgeVerification");
+LI.Registration.AgeVerification={init:function(){this.$ageSubsection=$("#age");
+this.$overEighteenCheckbox=$("input[type=checkbox]",this.$ageSubsection);
+this.$dobChooser=$(".dob-chooser, .dob-chooser-error",this.$ageSubsection);
+this.$overEighteenCheckbox.on("change",_.bind(this.toggleOverEighteen,this))
+},enableAgeVerification:function(b,a){this.$ageSubsection.hide()
+},disableAgeVerification:function(b,a){this.$ageSubsection.show()
+},toggleOverEighteen:function(a){if(this.$overEighteenCheckbox.is(":checked")){this.$dobChooser.hide()
+}else{this.$dobChooser.show()
+}}};
+$($.proxy(LI.Registration.AgeVerification.init,LI.Registration.AgeVerification));(function(){if(LI.BalloonCalloutManager!==undefined){return
+}LI.define("BalloonCalloutManager");
+LI.BalloonCalloutManager=(function(){if(LI.__HPA===true){console.info("HOMPAGE_PERFORMANCE_ANALYSIS :: /js/util/BalloonCallout.js")
+}var f=500,p=f,d=100,u="callout-overlay",y="callout-",n='<span class="callout-arrow"></span>',h={},j={zIndex:10,constraintoviewport:true},v=null,A=false,i=null,l=null,m=null,c=false,s={},g=new YAHOO.util.KeyListener(document,{keys:27},{fn:function(){if(i){i.close(null)
+}}});
+var b=function(C,B){h[C]=B
+};
+var x=function(B){delete h[B]
+};
+var q=function(){A=true
+};
+var r=function(){A=false;
+k()
+};
+var w=function(J){var G=J.config,I,D;
+if(m){window.clearTimeout(m);
+m=null;
+i=null;
+YDom.removeClass(l,"shown")
+}if(i){i.close()
+}i=J;
+if(G.relativeToTrigger===true){v.cfg.setProperty("constraintoviewport",false)
+}if(G.zIndex!==null&&G.zIndex!==undefined){v.cfg.setProperty("zIndex",G.zIndex)
+}f=G.persist?d:p;
+YDom.setStyle(l,"width",G.width);
+l.className=[G.type," ",y,G.orientation," ",G.id].join("");
+if(!G.cacheCalloutContent&&G.id){v.setBody(document.getElementById(G.id).innerHTML+n)
+}else{v.setBody(G.content+n)
+}v.render(document.body);
+v.cfg.setProperty("context",[J.el,G.overlayCorner,G.contextCorner]);
+l.dimensions=o(l);
+J.el.dimensions=o(J.el);
+I=G.orientation.split("-");
+D=s[I[0]](J.el,l,I);
+D.dx+=G.offsetX;
+D.dy+=G.offsetY;
+YDom.setXY(l,[l.dimensions.x+D.dx,l.dimensions.y+D.dy]);
+if(YAHOO.env.ua.ie===6){v.moveTo([l.dimensions.x+D.dx,l.dimensions.y+D.dy])
+}YDom.addClass(l,"shown");
+if(G.eventsOnInternalElements){var C=G.eventsOnInternalElements;
+if(C.elementClass&&C.elementClass!==""){var F=YDom.getElementsByClassName(C.elementClass),H=F.length;
+for(var E=0,B;
+E<H;
+E++){B=F[E];
+YEvent.purgeElement(B,false,C.elementEvent);
+YEvent.on(B,C.elementEvent,J[C.elementAction],J,true)
+}}c=true
+}if(G.persist){g.enable()
+}};
+s={top:function(H,C,B,E){var I=H.dimensions||o(H),G=C.dimensions||o(C),D,F;
+E=E||{};
+if(B[0]==="top"){E.dx=I.x+0.5*I.width-(G.x+0.5*G.width);
+E.dy=I.y+I.height-G.y;
+if(B[1]){this[B[1]](H,C,B,E)
+}}else{D=Y$(".callout-arrow",C,true);
+F=o(D);
+F.height=F.height||0;
+E.dy+=(0.5*G.height-0.5*F.height)
+}return E
+},right:function(H,C,B,E){var I=H.dimensions||o(H),G=C.dimensions||o(C),D,F;
+E=E||{};
+if(B[0]==="right"){E.dx=I.x-(G.x+G.width);
+E.dy=I.y+0.5*I.height-(G.y+0.5*G.height);
+if(B[1]){this[B[1]](H,C,B,E)
+}}else{D=Y$(".callout-arrow",C,true);
+F=o(D);
+F.width=F.width||0;
+E.dx+=(-0.5*G.width+0.5*F.width)
+}return E
+},bottom:function(H,C,B,E){var I=H.dimensions||o(H),G=C.dimensions||o(C),D,F;
+E=E||{};
+if(B[0]==="bottom"){E.dx=I.x+0.5*I.width-(G.x+0.5*G.width);
+E.dy=I.y-(G.y+G.height);
+if(B[1]){this[B[1]](H,C,B,E)
+}}else{D=Y$(".callout-arrow",C,true);
+F=o(D);
+F.height=F.height||0;
+E.dy+=(-0.5*G.height+0.5*F.height)
+}return E
+},left:function(H,C,B,E){var I=H.dimensions||o(H),G=C.dimensions||o(C),D,F;
+E=E||{};
+if(B[0]==="left"){E.dx=I.x+I.width-G.x;
+E.dy=I.y+0.5*I.height-(G.y+0.5*G.height);
+if(B[1]){this[B[1]](H,C,B,E)
+}}else{D=Y$(".callout-arrow",C,true);
+F=o(D);
+F.width=F.width||0;
+E.dx+=(0.5*G.width-0.5*F.width)
+}return E
+}};
+var o=function(D){var C=YDom.getXY(D),F,B,E;
+if(!C||!C.length){return{}
+}F=D.getBoundingClientRect();
+E=parseInt(F.right-F.left,10);
+B=parseInt(F.bottom-F.top,10);
+return{height:B,width:E,x:C[0],y:C[1]}
+};
+var z=function(C){var B=i&&!i.isActive();
+if((!A&&B)||C){v.setBody("");
+i=null;
+YDom.removeClass(l,"shown");
+g.disable()
+}};
+var k=function(){if(!m){m=window.setTimeout(function(){window.clearTimeout(m);
+m=null;
+z(false)
+},f)
+}};
+var t=function(){z(true)
+};
+var e=function(){v=new YAHOO.widget.Overlay(u,j);
+v.render(document.body);
+l=YDom.get(u);
+YEvent.on(l,"mouseover",q);
+YEvent.on(l,"mouseout",r);
+if(LI.Events&&typeof LI.Events.trigger==="function"){LI.Events.trigger("LI.BalloonCalloutManager:initialized")
+}};
+var a=function(){return i
+};
+YEvent.onDOMReady(function(){if(YAHOO&&YAHOO.widget&&YAHOO.widget.Overlay){e()
+}else{var B;
+if(!(LI&&LI.UrlPackage&&LI.UrlPackage.containerCore)){throw new Error("The package url for container-core does not exist.")
+}B=LI.UrlPackage.containerCore;
+YAHOO.util.Get.script(B,{onSuccess:e,onFailure:function(){throw new Error("Failed to load dependency: "+B)
+}})
+}});
+return{register:b,destroy:x,overlay:v,show:w,hide:k,showing:a,forceClose:t}
+})()
+})();
+LI.define("BalloonCallout");
+LI.BalloonCallout=function(c,r){var p=LI.BalloonCalloutManager,b=null,f=350,d="hover",a=YDom.get("callout-overlay")||null,m={"left":["tl","tr",5,0],"right":["tr","tl",-5,0],"top":["tl","tl",0,5],"bottom":["bl","tl",0,-5],"top-left":["tl","bl",0,5],"top-right":["tr","br",0,5],"right-top":["tr","tl",-5,0],"right-bottom":["br","bl",-5,0],"bottom-right":["br","tr",0,-5],"bottom-left":["bl","tl",0,-5],"left-bottom":["bl","br",5,0],"left-top":["tl","tr",5,0]},n,k,h,g;
+r=r||{};
+if(c.tagName&&c.tagName.toLowerCase()==="a"&&c.href.indexOf("#")>-1){r.anchor=true;
+r.id=c.href.substring(c.href.indexOf("#")+1)
+}else{r.anchor=false
+}r={anchor:r.anchor,width:r.width||300,id:r.id||"",overlayCorner:r.overlayCorner||null,contextCorner:r.contextCorner||null,orientation:r.orientation||"left-top",content:r.content||null,events:r.events||["mouseover","mouseout"],eventsOnInternalElements:r.eventsOnInternalElements||null,type:r.type||"balloon-callout",offsetX:r.offsetX||0,offsetY:r.offsetY||0,relativeToTrigger:r.relativeToTrigger||false,zIndex:r.zIndex,persist:r.persist||false,delayOpen:r.delayOpen||false,cacheCalloutContent:r.cacheCalloutContent!==undefined?r.cacheCalloutContent:true,toolTipTextAttr:r.toolTipTextAttr||null,openCallback:r.openCallback||null,closeCallback:r.closeCallback||null};
+var o=function(s){YEvent.preventDefault(s);
+if(r.persist){YEvent.stopPropagation(s)
+}};
+var q=function(s){this.persist=true;
+if(YAHOO.util.Dom.hasClass(s.target,"callout-close")){j()
+}};
+var e=function(s){var t=false;
+if(s.button){t=(s.button===2);
+this.persist=t?true:false
+}if(!this.persist){j.call(this,s)
+}else{this.persist=false
+}};
+var i=function(){var t=this;
+this.active=true;
+YDom.addClass(c,d);
+if(g){n=c.title;
+c.title=""
+}function s(){p.show(t);
+t.openEvent.fire();
+if(!a){a=YDom.get("callout-overlay")
+}if(r.persist){YEvent.on(a,"click",q,t,true);
+YEvent.on(document,"click",e,t,true);
+var u=YDom.getElementsByClassName("callout-close",null,a);
+if(u.length>0){u[0].focus()
+}}else{YEvent.removeListener(a,"click",q);
+YEvent.removeListener(document,"click",e)
+}if(r.openCallback&&typeof(r.openCallback)==="function"){r.openCallback(t)
+}}if(r.delayOpen&&!b){b=window.setTimeout(function(){b=null;
+s()
+},f)
+}else{s()
+}};
+var j=function(s){this.active=false;
+this.persist=false;
+YDom.removeClass(c,d);
+if(g){c.title=n
+}if(r.delayOpen&&b){window.clearTimeout(b);
+b=null
+}if(s){p.hide()
+}else{p.forceClose()
+}if(r.persist){YEvent.removeListener(a,"click",q);
+YEvent.removeListener(document,"click",e);
+if(c){c.focus()
+}}if(r.closeCallback&&typeof(r.closeCallback)==="function"){r.closeCallback(self)
+}};
+var l=function(s){this.active=!this.active;
+if(this.active||this!==p.showing()){i.call(this,s)
+}else{if(!r.persist||(r.events[0]!=="mouseover")){j.call(this,s)
+}else{this.active=true
+}}};
+this.isActive=function(){return this.active
+};
+this.destroy=function(){if(r.anchor){YEvent.removeListener(c,"click",o)
+}if(r.persist){YEvent.removeListener(c,r.events[0],l)
+}else{YEvent.removeListener(c,r.events[0],i);
+YEvent.removeListener(c,r.events[1],j)
+}if(r.eventsOnInternalElements){var w=r.eventsOnInternalElements;
+if(w.elementClass&&w.elementClass!==""){var t=YDom.getElementsByClassName(w.elementClass),v=t.length;
+for(var u=0,s;
+u<v;
+u++){s=t[u];
+YEvent.removeListener(s,w.elementEvent,w.elementAction)
+}}}j();
+p.destroy(c.id)
+};
+this.setContent=function(s){if(!s){s=document.getElementById(r.id).innerHTML
+}r.content=s
+};
+if(!r.content){r.content=document.getElementById(r.id);
+if(!r.content){throw"Could not find info element"
+}else{k=r.content.innerHTML;
+if(r.toolTipTextAttr){n=c.getAttribute(r.toolTipTextAttr);
+k=k.replace("__PLACEHOLDER__",LI.htmlEncode(n))
+}r.content=k
+}}if(r.width!=="auto"){r.width+="px"
+}if(r.anchor){YEvent.on(c,"click",o)
+}if(!r.overlayCorner){r.overlayCorner=m[r.orientation][0]
+}if(!r.contextCorner){r.contextCorner=m[r.orientation][1]
+}r.offsetX+=m[r.orientation][2];
+r.offsetY+=m[r.orientation][3];
+this.openEvent=new YAHOO.util.CustomEvent("open");
+YDom.generateId(c,"callout-trigger-");
+g=(r.toolTipTextAttr==="title");
+this.config=r;
+this.el=c;
+this.active=false;
+this.close=j;
+this.open=i;
+this.toggle=l;
+this.persist=false;
+p.register(c.id,this);
+if(r.persist){YEvent.on(c,r.events[0],l,this,true)
+}else{YEvent.on(c,r.events[0],i,this,true);
+YEvent.on(c,r.events[1],j,this,true)
+}};
+LI.Controls.register("LI.BalloonCallout");
+LI.define("BalloonCalloutDelegator");
+LI.BalloonCalloutDelegator=function(c,a){var b={};
+a=a||{};
+a.dataId=a.dataId?("data"+a.dataId):"data-li-tooltip-id";
+function d(g,e){if(e&&!b[e.id]){a.id=g;
+var f=new LI.BalloonCallout(e,a);
+f.toggle();
+b[e.id]=true
+}}YEvent.on(c,"mouseover",function(e){var f=YEvent.getTarget(e),g=YDom.getAttribute(f,a.dataId);
+if(g){YDom.generateId(f);
+d(g,f);
+YEvent.stopPropagation(e)
+}})
+};

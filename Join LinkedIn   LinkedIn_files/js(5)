@@ -1,0 +1,83 @@
+
+
+/* 7884z8cnrs9rexoj24awa3hz0 */
+
+LI.define("Genie");
+LI.Genie=function(c,p){var q="oid_cb_"+YDom.generateId().replace(/[^a-z]/i,"_"),r=q+"_allow",s=q+"_deny",n=q+"_error",l=q+"_close",d=q+"_scope",i={},k=c.tagName.toLowerCase(),a=this,m=false,b=null,h,e,j,f;
+p=p||{};
+p={url:p.url||null,handleClickManual:p.handleClickManual||null,onAllow:p.onAllow||function(){},onDeny:p.onDeny||function(){},onError:p.onError||function(){},onClose:p.onClose||function(){},scope:p.scope||window,popupWidth:p.popupWidth||790,popupHeight:p.popupHeight||580,obj:p.obj||{}};
+if(!p.url){if(k=="a"){p.url=c.href
+}else{throw new Error("No URL was supplied and no URL was found in the control.")
+}}i=YAHOO.lang.JSON.stringify({onAllow:r,onDeny:s,onError:n,onClose:l,scope:d});
+i=escape(i);
+p.url=p.url+"&cb="+i;
+f=function(u){var t=u;
+if(typeof(u)=="string"){t=LI.Controls.resolveName(u)
+}return t
+};
+p.onAllow=f(p.onAllow);
+if(!p.onAllow){throw new Error("onAllow could not be found or resolved")
+}p.onDeny=f(p.onDeny);
+if(!p.onDeny){throw new Error("onDeny could not be found or resolved")
+}p.onError=f(p.onError);
+if(!p.onError){throw new Error("onError could not be found or resolved")
+}p.onClose=f(p.onClose);
+if(!p.onClose){throw new Error("onClose could not be found or resolved")
+}if(p.scope!="window"&&p.scope!=window){p.scope=f(p.scope);
+if(!p.scope){throw new Error("scope could not be found or resolved")
+}}function o(){window[r]=null;
+window[s]=null;
+window[n]=null;
+window[l]=null;
+window[d]=null;
+m=false;
+clearInterval(b);
+b=null
+}j=function(){window[r]=function(t){o();
+p.onAllow.call(p.scope,t,p.obj)
+};
+window[s]=function(t){o();
+p.onDeny.call(p.scope,t,p.obj)
+};
+window[n]=function(t){o();
+p.onError.call(p.scope,t,p.obj)
+};
+window[l]=function(t){o();
+p.onClose.call(p.scope,t,p.obj)
+};
+window[d]=a
+};
+function g(t){YEvent.preventDefault(t);
+j();
+h=window.open(p.url,"genie_popup","width="+p.popupWidth+",height="+p.popupHeight);
+m=true;
+b=setInterval(function(){if(m&&h.closed){o();
+p.onClose.call(p.scope,{},p.obj)
+}},300)
+}if(!p.handleClickManual){YEvent.on(c,"click",g)
+}return{handleClick:g}
+};
+
+/* ebayf6puggya0dn5vuuvv2qx8 */
+
+LI.define("Registration.PostToUAS");
+LI.Registration.PostToUAS=function(b){var f=b.responseText,e=b.successParameters.postUrl,d=b.successParameters.uasLoginErrorUrl,c=YAHOO.lang.JSON.parse(f),g=YDom.get("email-coldRegistrationForm").value,i={custom:{error:function(){var j=document.getElementById("global-error");
+j.style.display="none";
+d=d+"&emailAddress="+encodeURIComponent(g);
+if(c.goback){d=d+"&session_redirect="+encodeURIComponent(c.goback)
+}window.location=d
+}},timeout:25000},h=YDom.get("password-coldRegistrationForm").value,a="session_key="+LI.htmlEncode(g)+"&session_password="+LI.htmlEncode(h);
+if(c.goback){e=e+"&session_redirect="+c.goback
+}LI.asyncRequest("POST",e,i,a)
+};
+
+/* ca2glm3t1smb8jvzeazzla6cu */
+
+(function(){dust.register("tl/apps/reg/facebook_registration_friends",c);
+function c(e,d){return e.exists(d.get("friends"),d,{"block":b},null)
+}function b(e,d){return e.write('<div class="fb-friends"><h2>').reference(d.get("fbRegistrationFriendsText"),d,"h").write("</h2><ul>").section(d.get("friends"),d,{"block":a},null).write("</ul></div>")
+}function a(e,d){return e.write('<li><img src="').reference(d.get("pictureUrl"),d,"h").write('" width="50" height="50" alt="').reference(d.get("firstName"),d,"h").write(" ").reference(d.get("lastName"),d,"h").write('" /><strong class="n fn">').reference(d.get("name"),d,"h").write("</strong></li>")
+}return c
+})();
+(function(){dust.register("facebook_registration_friends",dust.cache["tl/apps/reg/facebook_registration_friends"])
+})();

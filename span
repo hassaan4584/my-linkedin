@@ -1,0 +1,18 @@
+span
+{
+    float: left;
+    height: 16px;
+    width: 62px;
+    text-indent: -119988px;
+    overflow: hidden;
+    text-align: left;
+    margin-left: 0px;
+    margin-right: 3px;
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-top: -2px;
+    margin-bottom: -2px;
+    background: url('logo_linkedin_med_grey_trans_64x16_v1.png') no-repeat scroll top left transparent;
+    line-height: 14px;
+    color: #666
+}   
