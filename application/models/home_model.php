@@ -25,7 +25,7 @@ class Home_model extends CI_Model{
 
 
 		$path='icon_no_photo_no_border_offset_100x100.png';
-		$pwd=$this->encrypt->encode($this->input->post('pwd'));
+		$pwd=$this->encrypt->sha1($this->input->post('pwd'));
 	//	echo ($pwd);
 		$data=array('userEmail'=>$this->input->post('Email'),'userFirstName'=>$this->input->post('firstname'),'userLastName'=>$this->input->post('lastname'),'userPassword'=>$pwd,'profilePic'=> $path );
 	

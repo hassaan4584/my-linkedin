@@ -23,7 +23,7 @@ class JoinNow_model extends CI_Model{
 	{
 		$this->load->library('encrypt');
 		$path='icon_no_photo_no_border_offset_100x100.png';
-		$pwd=$this->encrypt->encode($this->input->post('password'));
+		$pwd=$this->encrypt->sha1($this->input->post('password'));
 		echo ($this->input->post('password'));
 		echo ($pwd);
 		$data=array('userEmail'=>$this->input->post('email'),'userFirstName'=>$this->input->post('firstName'),'userLastName'=>$this->input->post('lastName'),'userPassword'=>$pwd, 'profilePic'=> $path  );

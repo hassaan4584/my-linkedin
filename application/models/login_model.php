@@ -13,7 +13,7 @@ class Login_model extends CI_Model{
 		$userEmail = $this->security->xss_clean($this->input->post('userEmail'));
 		$password = $this->security->xss_clean($this->input->post('password'));
 
-		$pwd=$this->encrypt->encode($this->input->post('password'));
+		$pwd=$this->encrypt->sha1($this->input->post('password'));
 		
 		// Prep the query
 		$this->db->where('userEmail', $userEmail);
