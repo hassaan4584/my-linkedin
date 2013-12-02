@@ -34,19 +34,19 @@ class BuildProfile extends CI_Controller
 
 	function process()
 	{
-		$this->load->model('buildProfile_model');
-		$this->buildProfile_model->common_update();
+		$this->load->model('build_profile_model');
+		$this->build_profile_model->common_update();
 		if($this->input->post('status-chooser')=='employed')
 		{
-			$this->buildProfile_model->employee();							
+			$this->build_profile_model->employee();							
 		}
 		else if($this->input->post('status-chooser')=='looking')
 		{
-			$this->buildProfile_model->job_seeker();							
+			$this->build_profile_model->job_seeker();							
 		}
 		else if($this->input->post('status-chooser')=='student')
 		{
-			$this->buildProfile_model->student();							
+			$this->build_profile_model->student();							
 		}
 		redirect('uploadProfileImage','refresh');
 				
