@@ -8,9 +8,12 @@ class Login_model extends CI_Model{
 	}
 	
 	public function validate(){
+		$this->load->library('encrypt');
 		// grab user input
 		$userEmail = $this->security->xss_clean($this->input->post('userEmail'));
 		$password = $this->security->xss_clean($this->input->post('password'));
+
+		$pwd=$this->encrypt->encode($this->input->post('password'));
 		
 		// Prep the query
 		$this->db->where('userEmail', $userEmail);

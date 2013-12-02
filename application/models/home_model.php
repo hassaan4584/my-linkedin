@@ -26,8 +26,8 @@ class Home_model extends CI_Model{
 
 		$path='icon_no_photo_no_border_offset_100x100.png';
 		$pwd=$this->encrypt->encode($this->input->post('pwd'));
-		echo ($pwd);
-		$data=array('userEmail'=>$this->input->post('Email'),'userFirstName'=>$this->input->post('firstname'),'userLastName'=>$this->input->post('lastname'),'userPassword'=>$this->input->post('pwd'),'profilePic'=> $path );
+	//	echo ($pwd);
+		$data=array('userEmail'=>$this->input->post('Email'),'userFirstName'=>$this->input->post('firstname'),'userLastName'=>$this->input->post('lastname'),'userPassword'=>$pwd,'profilePic'=> $path );
 	
 		// $sql = "INSERT INTO linkedin_users (userEmail,userFirstName,userLastName,userPassword) 
         // VALUES (".this->input->post('Email').",".this->.",".this->input->post('lastname').",".this->input->post('pwd').") ";
@@ -39,7 +39,7 @@ class Home_model extends CI_Model{
 		$query = $this->db->get('linkedin_users');
 		$row = $query->row();
 		$userId=$row->userId;
-				$data=array('userId'=>$userId,'userEmail'=>$this->input->post('Email'),'userFirstName'=>$this->input->post('firstname'),'userLastName'=>$this->input->post('lastname'),'userPassword'=>$this->input->post('pwd'),'profileImagePath'=> $path );
+				$data=array('userId'=>$userId,'userEmail'=>$this->input->post('Email'),'userFirstName'=>$this->input->post('firstname'),'userLastName'=>$this->input->post('lastname'),'userPassword'=>$pwd,'profileImagePath'=> $path );
 
 		$this->session->set_userdata($data);
 		return true;
