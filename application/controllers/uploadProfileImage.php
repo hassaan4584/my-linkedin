@@ -13,19 +13,19 @@ class UploadProfileImage extends CI_Controller{
 		// to the user
 		$this->load->helper('url');
 
-		if($this->session->userdata('userId'))
+		if($this->session->userdata('userEmail'))
 		{
 			//redirect('what_is_linkedin', 'refresh');
 			//$this->load->view('header_view');
-			$this->load->model('uploadImage_model');
-			$path=$this->uploadImage_model->imagePath();
+			$this->load->model('upload_image_model');
+			$path=$this->upload_image_model->imagePath();
 		
 			//$path='./My Profile  Add Photo   LinkedIn_files/icon_no_photo_no_border_offset_100x100.png';
 
 			$data['picPath'] = $path;
 			$this->load->view("header2_view",$data);
 			
-			$this->load->view('uploadImage_View',$data);
+			$this->load->view('uploadImage_view',$data);
 		
 		}
 		else
@@ -34,8 +34,6 @@ class UploadProfileImage extends CI_Controller{
 			//$this->load->view('header_view',$data);
 			$this->load->view('header_view');
 			$this->load->view('home_view', $data);
-
-			$this->load->view('footer_view', $data);
 		}
 		//$this->load->view('common/footer',$data);
 	}
@@ -64,9 +62,9 @@ class UploadProfileImage extends CI_Controller{
 		{
 			$data = array('upload_data' => $this->upload->data());
 
-			$this->load->model('uploadImage_model');
+			$this->load->model('upload_image_model');
 		//echo $this->input->post('path');
-			$this->uploadImage_model->addImagePath();
+			$this->upload_image_model->addImagePath();
 
 
 			//$this->load->view('error', $data);
